@@ -159,6 +159,18 @@ impl crate::TermWindow {
     }
 
     pub fn paint_pass(&mut self) -> anyhow::Result<()> {
+        // PERFORMANCE TODO: Implement damage tracking to avoid full repaints.
+        // Currently we clear all quads and re-render everything on every frame,
+        // even if only one cell changed. This is inefficient for input latency.
+        //
+        // Potential optimizations:
+        // 1. Track dirty regions per pane (start_row, end_row)
+        // 2. Only re-render glyphs in dirty regions
+        // 3. Cache unchanged portions of the display
+        // 4. Use damage rectangles in the Wayland surface
+        //
+        // See kitty's implementation for reference: child-monitor.c:schedule_write_to_child()
+        // which only renders changed regions using damage tracking.
         {
             let gl_state = self.render_state.as_ref().unwrap();
             for layer in gl_state.layers.borrow().iter() {

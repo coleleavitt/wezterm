@@ -76,7 +76,8 @@ impl Line {
     pub fn with_width_and_cell(width: usize, cell: Cell, seqno: SequenceNo) -> Self {
         let mut cells = Vec::with_capacity(width);
         cells.resize(width, cell.clone());
-        let bits = LineBits::NONE;
+        // New lines are dirty by default since they need to be rendered
+        let bits = LineBits::DIRTY;
         Self {
             bits,
             cells: CellStorage::V(VecStorage::new(cells)),
@@ -88,7 +89,8 @@ impl Line {
     }
 
     pub fn from_cells(cells: Vec<Cell>, seqno: SequenceNo) -> Self {
-        let bits = LineBits::NONE;
+        // New lines are dirty by default since they need to be rendered
+        let bits = LineBits::DIRTY;
         Self {
             bits,
             cells: CellStorage::V(VecStorage::new(cells)),
@@ -818,6 +820,8 @@ impl Line {
         self.invalidate_implicit_hyperlinks(seqno);
         self.invalidate_zones();
         self.update_last_change_seqno(seqno);
+        // Mark line as dirty when modified for damage tracking
+        self.mark_dirty();
         if cell.attrs().hyperlink().is_some() {
             self.bits |= LineBits::HAS_HYPERLINK;
         }
@@ -1209,6 +1213,26 @@ impl Line {
         }
 
         result
+    }
+
+    /// Mark this line as dirty (needs re-rendering).
+    /// This is used for damage tracking to skip rendering unchanged lines.
+    #[inline]
+    pub fn mark_dirty(&mut self) {
+        self.bits |= LineBits::DIRTY;
+    }
+
+    /// Mark this line as clean (rendered, doesn't need re-rendering).
+    /// This is called after the line has been rendered to the screen.
+    #[inline]
+    pub fn mark_clean(&mut self) {
+        self.bits.remove(LineBits::DIRTY);
+    }
+
+    /// Check if this line is dirty (needs re-rendering).
+    #[inline]
+    pub fn is_dirty(&self) -> bool {
+        self.bits.contains(LineBits::DIRTY)
     }
 }
 

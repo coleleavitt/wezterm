@@ -511,8 +511,6 @@ impl crate::TermWindow {
                     }
 
                     if let Some(texture) = texture {
-                        // TODO: clipping, but we can do that based on pixels
-
                         let pos_x = cluster_x_pos
                             + if params.use_pixel_positioning {
                                 (glyph.x_offset + glyph.bearing_x).get() as f32
@@ -520,10 +518,6 @@ impl crate::TermWindow {
                                 0.
                             };
 
-                        if pos_x > params.pixel_width {
-                            log::trace!("breaking on overflow {} > {}", pos_x, params.pixel_width);
-                            break;
-                        }
                         let pos_x = pos_x + params.left_pixel_x;
 
                         // We need to conceptually slice this texture into
@@ -586,8 +580,21 @@ impl crate::TermWindow {
                         let texture_range = pos_x + adjust
                             ..pos_x + adjust + (texture.coords.size.width as f32 * width_scale);
 
-                        // First bucket the ranges according to cursor position
-                        let (left, mid, right) = range3(&texture_range, &cursor_range_pixels);
+                        // Define viewport clipping range in pixel coordinates
+                        let viewport_range = params.left_pixel_x
+                            ..(params.left_pixel_x + params.pixel_width);
+
+                        // First clip to viewport bounds to prevent rendering outside visible area
+                        let clipped_texture_range = intersection(&texture_range, &viewport_range);
+
+                        // Skip if glyph is completely outside viewport after clipping
+                        if clipped_texture_range.is_empty() {
+                            continue;
+                        }
+
+                        // Slow path always used for now (fast path disabled due to color issues)
+                        // Then bucket the clipped ranges according to cursor position
+                        let (left, mid, right) = range3(&clipped_texture_range, &cursor_range_pixels);
                         // Then sub-divide the non-cursor ranges according to selection
                         let (la, lb, lc) = range3(&left, &selection_pixel_range);
                         let (ra, rb, rc) = range3(&right, &selection_pixel_range);

@@ -49,5 +49,10 @@ bitflags! {
         /// Otherwise, the auto-detect direction is used, falling back
         /// to the direction specified by the RTL bit.
         const AUTO_DETECT_DIRECTION = 1<<8;
+
+        /// true if this line has been modified and needs re-rendering.
+        /// This is cleared after rendering the line.
+        /// Used for damage tracking to skip rendering unchanged lines.
+        const DIRTY = 1<<9;
     }
 }

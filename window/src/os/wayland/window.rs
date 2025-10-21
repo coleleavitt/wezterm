@@ -942,6 +942,10 @@ impl WaylandWindowInner {
                         ) {
                             self.surface().attach(Some(buffer.wl_buffer()), 0, 0);
                             self.surface().set_buffer_scale(factor as i32);
+                            // Per Wayland protocol spec and compositor implementations (smithay, niri),
+                            // set_buffer_scale must be followed by a commit to take effect.
+                            // This matches the pattern used in frame.rs:257-258 and frame.rs:268-269.
+                            self.surface().commit();
                             self.surface_factor = factor;
                         }
                     }
@@ -998,7 +1002,16 @@ impl WaylandWindowInner {
 
     fn invalidate(&mut self) {
         if self.frame_callback.is_some() {
+            // PERFORMANCE: Instead of just setting invalidated and returning,
+            // dispatch NeedRepaint immediately. This allows the rendering to
+            // proceed while we wait for the frame callback, reducing input latency.
+            // The frame callback mechanism will still throttle updates to match
+            // the compositor's refresh rate, but input won't be blocked.
+            //
+            // This matches kitty's approach: immediately trigger render even when
+            // frame callback is pending, letting the compositor handle pacing.
             self.invalidated = true;
+            self.events.dispatch(WindowEvent::NeedRepaint);
             return;
         }
         self.do_paint().unwrap();
@@ -1081,9 +1094,9 @@ impl WaylandWindowInner {
         }
 
         if self.frame_callback.is_some() {
-            // Painting now won't be productive, so skip it but
-            // remember that we need to be painted so that when
-            // the compositor is ready for us, we can paint then.
+            // A frame callback is already pending. We cannot request another one
+            // until the compositor responds to the first one, as per Wayland protocol.
+            // Mark as invalidated so we'll paint when the callback arrives.
             self.invalidated = true;
             return Ok(());
         }

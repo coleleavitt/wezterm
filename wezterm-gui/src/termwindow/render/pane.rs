@@ -342,8 +342,10 @@ impl crate::TermWindow {
                 + border.left.get() as f32
                 + (pos.left as f32 * self.render_metrics.cell_size.width as f32);
 
-            // Use the actual pixel width from background_rect for proper text clipping
-            let pane_pixel_width = background_rect.size.width;
+            // Use the text rendering width (dims.cols * cell_width) for proper text clipping.
+            // This is the actual width available for rendering text cells, not the background
+            // rect width which includes padding/border adjustments.
+            let pane_pixel_width = dims.cols as f32 * self.render_metrics.cell_size.width as f32;
 
             let mut render = LineRender {
                 term_window: self,
@@ -451,9 +453,14 @@ impl crate::TermWindow {
                     // If line is clean and cache is valid, reuse cached quads.
                     // This optimization skips expensive glyph shaping and rendering
                     // for unchanged lines, reducing paint_impl time by ~5-8ms.
+                    //
+                    // IMPORTANT: Always render lines with cursor or selection even if "clean"
+                    // because cursor position, blink state, or selection may have changed.
+                    let is_cursor_line = self.cursor.y == stable_row;
+                    let has_selection = !selrange.is_empty();
                     let is_dirty = line.is_dirty();
 
-                    if !is_dirty {
+                    if !is_dirty && !is_cursor_line && !has_selection {
                         if let Some(cached_quad) =
                             self.term_window.line_quad_cache.borrow_mut().get(&quad_key)
                         {

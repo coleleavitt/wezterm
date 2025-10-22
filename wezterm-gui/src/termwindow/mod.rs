@@ -1687,6 +1687,19 @@ impl TermWindow {
         if dirty.is_empty() {
             return;
         }
+
+        // AUTO-SCROLL TO BOTTOM: If viewport is set (scrolled back) but we're within
+        // a few lines of the bottom and new output arrives, clear the viewport to
+        // follow the new output. This prevents text from appearing "cut off" when
+        // commands output text and push content down.
+        // This matches kitty's behavior of auto-scrolling to bottom on new output.
+        if let Some(current_viewport) = self.get_viewport(pane.pane_id()) {
+            let distance_from_bottom = dims.physical_top.saturating_sub(current_viewport);
+            // If we're within 3 lines of the bottom, snap to following the bottom
+            if distance_from_bottom <= 3 {
+                self.pane_state(pane.pane_id()).viewport = None;
+            }
+        }
         if pane.downcast_ref::<CopyOverlay>().is_none()
             && pane.downcast_ref::<QuickSelectOverlay>().is_none()
         {

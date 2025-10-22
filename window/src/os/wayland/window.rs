@@ -281,9 +281,15 @@ impl WaylandWindow {
         let (x, y) = window_frame.location();
         let surface_width = dimensions.pixels_to_surface(dimensions.pixel_width as i32);
         let surface_height = dimensions.pixels_to_surface(dimensions.pixel_height as i32);
+        // IMPORTANT: The window_frame draws borders AROUND the content:
+        // - Bottom border is drawn at y=height (12px border below content)
+        // - Location offset y=-30 accounts for header above
+        // The geometry must include the bottom border to prevent clipping.
+        // Add BORDER_SIZE (12) to height to include bottom border in geometry.
+        const BORDER_SIZE: i32 = 12;
         window
             .xdg_surface()
-            .set_window_geometry(x, y, surface_width, surface_height);
+            .set_window_geometry(x, y, surface_width, surface_height + BORDER_SIZE);
         window.commit();
 
         let copy_and_paste = CopyAndPaste::create();
@@ -887,11 +893,23 @@ impl WaylandWindowInner {
                 let (x, y) = self.window_frame.location();
                 let surface_width = self.pixels_to_surface(pixel_width);
                 let surface_height = self.pixels_to_surface(pixel_height);
+                // IMPORTANT: The window_frame draws borders AROUND the content using subsurfaces:
+                // - Top border (header): at y=-HEADER_SIZE (accounted for by location())
+                // - Bottom border: at y=height (drawn BELOW content, needs to be in geometry)
+                // - Left/Right borders: at x=-BORDER_SIZE and x=width (outside content)
+                //
+                // The geometry describes the full window including ALL decorations.
+                // Location() gives us the offset for top decorations (y=-30 for header).
+                // We must add BORDER_SIZE to height to include the bottom border,
+                // otherwise the compositor clips it and we get cutoff at the bottom.
+                const BORDER_SIZE: i32 = 12;
                 self.window
                     .as_mut()
                     .unwrap()
                     .xdg_surface()
-                    .set_window_geometry(x, y, surface_width, surface_height);
+                    .set_window_geometry(x, y, surface_width, surface_height + BORDER_SIZE);
+                // NOTE: Geometry commit happens after buffer resize and paint
+                // to ensure buffer dimensions match the geometry we're committing.
                 // Compute the new pixel dimensions
                 let new_dimensions = Dimensions {
                     pixel_width: pixel_width.try_into().unwrap(),

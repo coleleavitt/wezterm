@@ -42,6 +42,12 @@ use wayland_client::protocol::wl_region::WlRegion;
 use wayland_client::protocol::wl_surface::WlSurface;
 use wayland_client::{Connection as WConnection, Dispatch, Proxy, QueueHandle};
 use wayland_egl::{is_available as egl_is_available, WlEglSurface};
+use wayland_protocols::wp::fractional_scale::v1::client::wp_fractional_scale_v1::WpFractionalScaleV1;
+use wayland_protocols::wp::presentation_time::client::wp_presentation_feedback::WpPresentationFeedback;
+use wayland_protocols::wp::tearing_control::v1::client::wp_tearing_control_v1::{
+    PresentationHint, WpTearingControlV1,
+};
+use wayland_protocols::wp::viewporter::client::wp_viewport::WpViewport;
 use wayland_protocols_plasma::blur::client::org_kde_kwin_blur::OrgKdeKwinBlur;
 use wayland_protocols_plasma::blur::client::org_kde_kwin_blur_manager::OrgKdeKwinBlurManager;
 use wezterm_font::FontConfiguration;
@@ -336,6 +342,12 @@ impl WaylandWindow {
 
             wegl_surface: None,
             gl_state: None,
+            presentation_feedback: None,
+            last_presentation_time: None,
+            fractional_scale: None,
+            current_fractional_scale: None,
+            viewport: None,
+            tearing_control: None,
         }));
 
         let window_handle = Window::Wayland(WaylandWindow(window_id));
@@ -390,6 +402,36 @@ impl WindowOps for WaylandWindow {
             }
         })
         .await
+    }
+
+    fn finish_frame(&self, frame: glium::Frame, dirty_rects: &[(i32, i32, i32, i32)]) -> anyhow::Result<()> {
+        // Apply Wayland damage rectangles before finishing the frame.
+        // This tells the compositor which regions actually changed, allowing it to optimize.
+        let rects = dirty_rects.to_vec(); // Copy to move into closure
+        WaylandConnection::with_window_inner(self.0, move |inner| {
+            let surface = inner.surface();
+
+            // Apply damage rectangles
+            if !rects.is_empty() {
+                for &(x, y, width, height) in &rects {
+                    surface.damage_buffer(x, y, width, height);
+                }
+            }
+
+            // Request presentation feedback for accurate latency measurement
+            if let Some(presentation) = WaylandConnection::get()
+                .and_then(|conn| conn.wayland().wayland_state.borrow().presentation.clone())
+            {
+                let qh = WaylandConnection::get().unwrap().wayland().event_queue.borrow().handle();
+                let feedback = presentation.feedback(surface, &qh, surface.clone());
+                inner.presentation_feedback = Some(feedback);
+                log::trace!("Requested presentation feedback: {:?}", inner.presentation_feedback);
+            }
+
+            Ok(())
+        });
+        frame.finish()?;
+        Ok(())
     }
 
     fn hide(&self) {
@@ -602,6 +644,18 @@ pub struct WaylandWindowInner {
     // libraries will segfault on shutdown
     wegl_surface: Option<WlEglSurface>,
     gl_state: Option<Rc<glium::backend::Context>>,
+    /// Presentation timing feedback for measuring actual presentation latency
+    presentation_feedback: Option<WpPresentationFeedback>,
+    /// Last recorded presentation timestamp (nanoseconds)
+    pub(super) last_presentation_time: Option<u64>,
+    /// Fractional scale object for this surface
+    fractional_scale: Option<WpFractionalScaleV1>,
+    /// Current fractional scale factor (in 120ths, so 120 = 1.0x)
+    pub(super) current_fractional_scale: Option<u32>,
+    /// Viewporter object for this surface
+    viewport: Option<WpViewport>,
+    /// Tearing control object for this surface
+    tearing_control: Option<WpTearingControlV1>,
 }
 
 impl WaylandWindowInner {
@@ -687,6 +741,9 @@ impl WaylandWindowInner {
 
         self.gl_state.replace(gl_state.clone());
         self.wegl_surface = wegl_surface;
+
+        // Setup advanced Wayland protocols for this surface now that it's created
+        self.setup_surface_protocols();
 
         Ok(gl_state)
     }
@@ -1142,11 +1199,63 @@ impl WaylandWindowInner {
         Ok(())
     }
 
-    fn surface(&self) -> &WlSurface {
+    pub(super) fn surface(&self) -> &WlSurface {
         self.window
             .as_ref()
             .expect("Window should exist")
             .wl_surface()
+    }
+
+    /// Initialize advanced Wayland protocols for this surface
+    fn setup_surface_protocols(&mut self) {
+        let conn = match WaylandConnection::get() {
+            Some(conn) => conn,
+            None => return,
+        };
+
+        let wayland = conn.wayland();
+        let wayland_state = wayland.wayland_state.borrow();
+        let qh = wayland.event_queue.borrow().handle();
+        let surface = self.surface().clone();
+
+        // Setup fractional-scale for HiDPI
+        if let Some(fractional_scale_manager) = &wayland_state.fractional_scale_manager {
+            if self.fractional_scale.is_none() {
+                let fractional_scale = fractional_scale_manager.get_fractional_scale(
+                    &surface,
+                    &qh,
+                    surface.clone(),
+                );
+                log::info!("Enabled fractional-scale protocol for surface");
+                self.fractional_scale = Some(fractional_scale);
+            }
+        }
+
+        // Setup viewporter for efficient scaling
+        if let Some(viewporter) = &wayland_state.viewporter {
+            if self.viewport.is_none() {
+                let viewport = viewporter.get_viewport(&surface, &qh, surface.clone());
+                log::info!("Enabled viewporter protocol for surface");
+                self.viewport = Some(viewport);
+            }
+        }
+
+        // Setup tearing control - default to vsync, but allow async mode later
+        if let Some(tearing_control_manager) = &wayland_state.tearing_control_manager {
+            if self.tearing_control.is_none() {
+                let tearing_control = tearing_control_manager.get_tearing_control(
+                    &surface,
+                    &qh,
+                    surface.clone(),
+                );
+
+                // Start with vsync mode (default), can be changed to async later
+                // For now, use vsync for smooth presentation
+                tearing_control.set_presentation_hint(PresentationHint::Vsync);
+                log::info!("Enabled tearing-control protocol for surface (vsync mode)");
+                self.tearing_control = Some(tearing_control);
+            }
+        }
     }
 
     pub(crate) fn next_frame_is_ready(&mut self) {

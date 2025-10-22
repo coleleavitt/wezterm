@@ -449,6 +449,8 @@ pub struct TermWindow {
     /// We use this to attempt to do something reasonable
     /// if we run out of texture space
     allow_images: AllowImage,
+    /// Dirty rectangles for Wayland damage tracking (x, y, width, height in pixels)
+    dirty_rects: RefCell<Vec<(i32, i32, i32, i32)>>,
     scheduled_animation: RefCell<Option<Instant>>,
 
     created: Instant,
@@ -780,6 +782,7 @@ impl TermWindow {
             has_animation: RefCell::new(None),
             scheduled_animation: RefCell::new(None),
             allow_images: AllowImage::Yes,
+            dirty_rects: RefCell::new(Vec::new()),
             semantic_zones: HashMap::new(),
             ui_items: vec![],
             dragging: None,
@@ -1080,7 +1083,9 @@ impl TermWindow {
             ),
         );
         self.paint_impl(&mut RenderFrame::Glium(&mut frame));
-        window.finish_frame(frame).is_ok()
+        // Get dirty rectangles for Wayland damage tracking
+        let dirty_rects = self.dirty_rects.borrow();
+        window.finish_frame(frame, &dirty_rects).is_ok()
     }
 
     fn do_paint_webgpu(&mut self) -> anyhow::Result<bool> {

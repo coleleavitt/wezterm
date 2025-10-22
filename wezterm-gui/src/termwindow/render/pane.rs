@@ -577,6 +577,20 @@ impl crate::TermWindow {
                     // unless it's modified (which will set the dirty flag again).
                     line.mark_clean();
 
+                    // WAYLAND DAMAGE RECTANGLES: Record this line as a dirty rect for compositor.
+                    // Convert line index to pixel coordinates for Wayland damage_buffer().
+                    if is_dirty || is_cursor_line || has_selection {
+                        let cell_height = self.term_window.render_metrics.cell_size.height as i32;
+                        let y = self.top_pixel_y as i32 + (line_idx as i32 * cell_height);
+                        let width = self.pane_pixel_width as i32;
+                        self.term_window.dirty_rects.borrow_mut().push((
+                            self.left_pixel_x as i32,
+                            y,
+                            width,
+                            cell_height,
+                        ));
+                    }
+
                     Ok(())
                 }
             }

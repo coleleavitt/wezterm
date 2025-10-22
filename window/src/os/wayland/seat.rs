@@ -31,6 +31,16 @@ impl SeatHandler for WaylandState {
                 let keyboard = seat.get_keyboard(qh, KeyboardData {});
                 self.keyboard = Some(keyboard.clone());
 
+                // Attach high-resolution timestamps to keyboard if available
+                if let Some(input_timestamps_manager) = &self.input_timestamps_manager {
+                    let _keyboard_timestamps = input_timestamps_manager.get_keyboard_timestamps(
+                        &keyboard,
+                        qh,
+                        keyboard.clone(),
+                    );
+                    log::debug!("Attached high-resolution timestamps to keyboard");
+                }
+
                 if let Some(text_input) = &self.text_input {
                     text_input.advise_seat(&seat, &keyboard, qh);
                 }
@@ -49,6 +59,17 @@ impl SeatHandler for WaylandState {
                         PointerUserData::new(seat.clone()),
                     )
                     .expect("Failed to create pointer");
+
+                // Attach high-resolution timestamps to pointer if available
+                if let Some(input_timestamps_manager) = &self.input_timestamps_manager {
+                    let _pointer_timestamps = input_timestamps_manager.get_pointer_timestamps(
+                        pointer.pointer(),
+                        qh,
+                        pointer.pointer().clone(),
+                    );
+                    log::debug!("Attached high-resolution timestamps to pointer");
+                }
+
                 self.pointer = Some(pointer);
             }
             Capability::Touch /* if self.touch.is_none() */ => {

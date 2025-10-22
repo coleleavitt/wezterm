@@ -259,7 +259,8 @@ pub trait WindowOps {
     /// Setup opengl for rendering
     async fn enable_opengl(&self) -> anyhow::Result<Rc<glium::backend::Context>>;
     /// Advise the window that a frame is finished
-    fn finish_frame(&self, frame: glium::Frame) -> anyhow::Result<()> {
+    /// dirty_rects: Optional damage rectangles (x, y, width, height in pixels) for Wayland
+    fn finish_frame(&self, frame: glium::Frame, _dirty_rects: &[(i32, i32, i32, i32)]) -> anyhow::Result<()> {
         frame.finish()?;
         Ok(())
     }

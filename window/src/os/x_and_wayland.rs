@@ -232,11 +232,11 @@ impl WindowOps for Window {
         }
     }
 
-    fn finish_frame(&self, frame: glium::Frame) -> anyhow::Result<()> {
+    fn finish_frame(&self, frame: glium::Frame, dirty_rects: &[(i32, i32, i32, i32)]) -> anyhow::Result<()> {
         match self {
-            Self::X11(x) => x.finish_frame(frame),
+            Self::X11(x) => x.finish_frame(frame, dirty_rects),
             #[cfg(feature = "wayland")]
-            Self::Wayland(w) => w.finish_frame(frame),
+            Self::Wayland(w) => w.finish_frame(frame, dirty_rects),
         }
     }
 

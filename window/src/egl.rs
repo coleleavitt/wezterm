@@ -663,6 +663,18 @@ unsafe impl glium::backend::Backend for GlState {
     }
 
     fn swap_buffers(&self) -> Result<(), glium::SwapBuffersError> {
+        // FUTURE OPTIMIZATION: Wayland damage rectangles
+        // For Wayland, calling wl_surface.damage_buffer() before SwapBuffers with
+        // the actual dirty regions (based on our per-line damage tracking) would allow
+        // the compositor to optimize. This requires:
+        // 1. Passing dirty line info from paint_impl through rendering pipeline
+        // 2. Converting line indices to pixel rectangles
+        // 3. Getting WlSurface reference here (currently not available)
+        // 4. Calling surface.damage_buffer(x, y, width, height) for each dirty rect
+        //
+        // Without explicit damage calls, Wayland assumes the entire surface is damaged,
+        // which is safe but less optimal for the compositor.
+
         let res = unsafe {
             self.connection
                 .SwapBuffers(self.connection.display, self.surface)

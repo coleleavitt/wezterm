@@ -1,0 +1,630 @@
+# Instincts generated from https://github.com/coleleavitt/wezterm
+# Generated: 2026-08-02T15:52:12.328Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: wezterm-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/coleleavitt/wezterm
+---
+
+# Wezterm Commit Length
+
+## Action
+
+Keep commit messages concise (~49 characters)
+
+## Evidence
+
+- Average commit message length: 49 chars
+- Based on 71 commits
+
+---
+id: wezterm-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/coleleavitt/wezterm
+---
+
+# Wezterm Naming Files
+
+## Action
+
+Use snake_case naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: snake_case
+
+---
+id: wezterm-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/coleleavitt/wezterm
+---
+
+# Wezterm Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: wezterm-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/coleleavitt/wezterm
+---
+
+# Wezterm Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: wezterm-workflow-feature-development
+trigger: "when implementing a new feature"
+confidence: 0.75
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/coleleavitt/wezterm
+---
+
+# Wezterm Workflow Feature Development
+
+## Action
+
+Follow the feature-development workflow:
+1. Add feature implementation
+2. Add tests for feature
+3. Update documentation
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~5x per month
+- Files: 
+
+---
+id: wezterm-workflow-update-ci-workflows
+trigger: "when doing update ci workflows"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/coleleavitt/wezterm
+---
+
+# Wezterm Workflow Update Ci Workflows
+
+## Action
+
+Follow the update-ci-workflows workflow:
+1. Edit or run ci/generate-workflows.py to update workflow templates.
+2. Regenerate or manually edit multiple .github/workflows/gen_*.yml files.
+3. Commit all changed workflow files together.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: .github/workflows/gen_*.yml, ci/generate-workflows.py
+
+---
+id: wezterm-workflow-document-installation-instructions
+trigger: "when doing document installation instructions"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/coleleavitt/wezterm
+---
+
+# Wezterm Workflow Document Installation Instructions
+
+## Action
+
+Follow the document-installation-instructions workflow:
+1. Edit docs/install/linux.md to add or update installation steps.
+2. Optionally update related badges or links.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: docs/install/linux.md
+
+---
+id: wezterm-workflow-update-changelog-after-feature-or-fix
+trigger: "when doing update changelog after feature or fix"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/coleleavitt/wezterm
+---
+
+# Wezterm Workflow Update Changelog After Feature Or Fix
+
+## Action
+
+Follow the update-changelog-after-feature-or-fix workflow:
+1. Edit docs/changelog.md to summarize the changes.
+2. Commit with reference to the related PR or feature.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: docs/changelog.md
+
+---
+id: wezterm-workflow-nix-flake-update-and-fix
+trigger: "when doing nix flake update and fix"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/coleleavitt/wezterm
+---
+
+# Wezterm Workflow Nix Flake Update And Fix
+
+## Action
+
+Follow the nix-flake-update-and-fix workflow:
+1. Update nix/flake.lock (e.g., via nix flake update).
+2. Edit nix/flake.nix for code or dependency changes.
+3. Optionally update related GitHub Actions workflows.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: nix/flake.lock, nix/flake.nix, .github/workflows/nix-*.yml
+
+---
+id: wezterm-workflow-wayland-clipboard-or-dnd-refactor
+trigger: "when doing wayland clipboard or dnd refactor"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/coleleavitt/wezterm
+---
+
+# Wezterm Workflow Wayland Clipboard Or Dnd Refactor
+
+## Action
+
+Follow the wayland-clipboard-or-dnd-refactor workflow:
+1. Edit window/src/os/wayland/copy_and_paste.rs, data_device.rs, pointer.rs, window.rs, and/or state.rs.
+2. Restructure logic, add/refactor session types, or fix protocol handling.
+3. Add doc comments or improve code clarity.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: window/src/os/wayland/copy_and_paste.rs, window/src/os/wayland/data_device.rs, window/src/os/wayland/pointer.rs
+
+---
+id: wezterm-workflow-fix-or-improve-feature-and-update-tests
+trigger: "when doing fix or improve feature and update tests"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/coleleavitt/wezterm
+---
+
+# Wezterm Workflow Fix Or Improve Feature And Update Tests
+
+## Action
+
+Follow the fix-or-improve-feature-and-update-tests workflow:
+1. Edit the implementation file(s) to fix the bug or improve the feature.
+2. Edit or add corresponding test files to cover the change.
+3. Commit both implementation and test changes together.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: src/**/*.rs, term/src/test/*.rs
+
+---
+id: wezterm-workflow-docs-minor-fixes-and-link-updates
+trigger: "when doing docs minor fixes and link updates"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/coleleavitt/wezterm
+---
+
+# Wezterm Workflow Docs Minor Fixes And Link Updates
+
+## Action
+
+Follow the docs-minor-fixes-and-link-updates workflow:
+1. Edit one or more docs/**/*.md files to correct typos or update links.
+2. Optionally touch code comments or related doc files.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: docs/**/*.md
+
+---
+id: wezterm-instinct-naming-files
+trigger: "When creating or renaming a file"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Naming Files
+
+## Action
+
+Use snake_case for file names
+
+## Evidence
+
+- Pattern in files: src/**/*.rs, window/src/os/wayland/*.rs
+
+---
+id: wezterm-instinct-naming-functions
+trigger: "When defining a function"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Naming Functions
+
+## Action
+
+Use camelCase for function names
+
+## Evidence
+
+- Pattern in Rust codebase
+- Rust convention, inferred from codeStyle
+
+---
+id: wezterm-instinct-naming-classes
+trigger: "When defining a struct or enum (type)"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Naming Classes
+
+## Action
+
+Use PascalCase for type names
+
+## Evidence
+
+- Pattern in Rust codebase
+- Rust convention, inferred from codeStyle
+
+---
+id: wezterm-instinct-naming-constants
+trigger: "When defining a constant"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Naming Constants
+
+## Action
+
+Use SCREAMING_SNAKE_CASE for constants
+
+## Evidence
+
+- Pattern in Rust codebase
+- Rust convention, inferred from codeStyle
+
+---
+id: wezterm-instinct-import-style
+trigger: "When importing modules in Rust"
+confidence: 0.85
+domain: code-style
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Import Style
+
+## Action
+
+Use relative imports
+
+## Evidence
+
+- importStyle: relative
+
+---
+id: wezterm-instinct-export-style
+trigger: "When exporting modules or symbols"
+confidence: 0.85
+domain: code-style
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Export Style
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- exportStyle: named
+
+---
+id: wezterm-instinct-test-location
+trigger: "When adding or updating tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Test Location
+
+## Action
+
+Place tests in mixed locations, often in term/src/test/*.rs or alongside implementation
+
+## Evidence
+
+- testLocation: mixed
+- Pattern in files: term/src/test/*.rs
+
+---
+id: wezterm-instinct-test-after-fix
+trigger: "When fixing a bug or improving a feature"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Test After Fix
+
+## Action
+
+Add or update regression/unit tests for the affected code
+
+## Evidence
+
+- Workflow: fix-or-improve-feature-and-update-tests
+- Commit sequence includes test updates
+
+---
+id: wezterm-instinct-commit-prefix
+trigger: "When writing a commit message"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Commit Prefix
+
+## Action
+
+Prefix the commit with a type (e.g., docs:, fix:, ci:, nix:, wayland:)
+
+## Evidence
+
+- Pattern in commit examples: docs: add..., fix: Detect..., gha: Update...
+
+---
+id: wezterm-instinct-commit-length
+trigger: "When writing a commit message"
+confidence: 0.8
+domain: git
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Commit Length
+
+## Action
+
+Keep the commit subject concise (average ~49 characters)
+
+## Evidence
+
+- averageLength: 49
+- Pattern in commit examples
+
+---
+id: wezterm-instinct-commit-multiple-files
+trigger: "When updating related files for a workflow (e.g., CI, Nix, Wayland)"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Commit Multiple Files
+
+## Action
+
+Commit all related changes together in a single commit
+
+## Evidence
+
+- Workflow: update-ci-workflows, nix-flake-update-and-fix, wayland-clipboard-or-dnd-refactor
+
+---
+id: wezterm-instinct-update-ci-workflows
+trigger: "When CI platforms, dependencies, or build logic change and workflows must be regenerated or updated"
+confidence: 0.95
+domain: workflow
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Update Ci Workflows
+
+## Action
+
+Edit or run ci/generate-workflows.py, update .github/workflows/gen_*.yml, and commit all changed workflow files together
+
+## Evidence
+
+- Workflow: update-ci-workflows
+- Files: .github/workflows/gen_*.yml, ci/generate-workflows.py
+
+---
+id: wezterm-instinct-document-installation
+trigger: "When support for a new distro is added or installation steps change"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Document Installation
+
+## Action
+
+Edit docs/install/linux.md to add or update installation steps
+
+## Evidence
+
+- Workflow: document-installation-instructions
+- File: docs/install/linux.md
+
+---
+id: wezterm-instinct-update-changelog
+trigger: "After merging a notable feature, fix, or documentation update"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Update Changelog
+
+## Action
+
+Edit docs/changelog.md to summarize the changes and reference the related PR or feature
+
+## Evidence
+
+- Workflow: update-changelog-after-feature-or-fix
+- File: docs/changelog.md
+
+---
+id: wezterm-instinct-nix-flake-update
+trigger: "When Nix dependencies change, or Nix workflows need fixes or modernization"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Nix Flake Update
+
+## Action
+
+Update nix/flake.lock, edit nix/flake.nix, and optionally update related .github/workflows/nix-*.yml
+
+## Evidence
+
+- Workflow: nix-flake-update-and-fix
+- Files: nix/flake.lock, nix/flake.nix, .github/workflows/nix-*.yml
+
+---
+id: wezterm-instinct-wayland-clipboard-refactor
+trigger: "When improving, fixing, or restructuring Wayland clipboard or DnD logic"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Wayland Clipboard Refactor
+
+## Action
+
+Edit window/src/os/wayland/copy_and_paste.rs, data_device.rs, pointer.rs, window.rs, and/or state.rs; restructure logic or fix protocol handling
+
+## Evidence
+
+- Workflow: wayland-clipboard-or-dnd-refactor
+- Files: window/src/os/wayland/*.rs
+
+---
+id: wezterm-instinct-fix-and-test
+trigger: "When a bug is fixed or a feature is improved, especially if the fix is subtle or regression-prone"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Fix And Test
+
+## Action
+
+Edit the implementation file(s) and corresponding test files, and commit both together
+
+## Evidence
+
+- Workflow: fix-or-improve-feature-and-update-tests
+- Files: src/**/*.rs, term/src/test/*.rs
+
+---
+id: wezterm-instinct-docs-fix
+trigger: "When documentation errors, typos, or outdated links are found"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: coleleavitt/wezterm
+---
+
+# Wezterm Instinct Docs Fix
+
+## Action
+
+Edit one or more docs/**/*.md files to correct typos or update links
+
+## Evidence
+
+- Workflow: docs-minor-fixes-and-link-updates
+- Files: docs/**/*.md
+
